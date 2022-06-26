@@ -1,8 +1,8 @@
 "use strict";
 
 //string of hex values 
-let memory = new Array(4095);
-
+let memory = new Array(4096);
+let stack = new Array(256);
 function toHex(no) {
     return "0x" + no.toString(16);
 }
@@ -37,11 +37,11 @@ for (let i = fontStart, j = 0; i < fontEnd; i++, j++) {
 }
 //console.log(memory[toInt("0x050")]+"  "+toInt("0x050").toString());
 
-let pc = "0x00";
-let ir = '0'.repeat(16);
-let sp = '0'.repeat(8);
-let dt = '0'.repeat(8);
-let st = '0'.repeat(8);
+let pc = 0;
+let ir = 0;
+let sp = 0;
+let dt = 0;
+let st = 0;
 let registers = {};
 
 for (let i = 0; i <= 15; i++) {
