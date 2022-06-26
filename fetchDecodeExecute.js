@@ -21,14 +21,14 @@ function bin2hex(bin) {
 }
 
 function incremenetPC() {
-    pc = toHex(parseInt(pc, 16) + 1);
+    pc += 1;
 }
 
 function loadProgramToMemory(view8bit) {
     let i = toInt("0x200");
     for (let bit of view8bit) {
         console.log(i + " : " + intToBin(bit));
-        memory[i] = toHex(bit);
+        memory[i] = bit;
         i++;
     }
     console.log("loaded : " + i);
@@ -53,7 +53,7 @@ document.getElementById('inputfile')
             loadProgramToMemory(view);
             //initialize pc, program counter
 
-            pc = "0x200";
+            pc = toInt("0x200");
 
             fdeIntervalID = setInterval(() => {
                 fdeCycle();
@@ -69,10 +69,10 @@ document.getElementById('stop').addEventListener("click", function () {
 
 function fdeCycle() {
 
-    let instruction = hex2bin(memory[toInt(pc)]) + hex2bin(memory[toInt(pc) + 1].slice(2));
+    let instruction = intToBin(memory[pc]) + intToBin(memory[pc + 1]);
     incremenetPC();
     incremenetPC();
-    console.log("current pc : " + toInt(pc) + " instruction : " + instruction);
+    console.log("current pc : " + pc + " instruction : " + instruction);
 
     //let instruction = memory[toInt(pc)].slice(2)+memory[toInt(pc)+1].slice(2);
 
@@ -92,7 +92,7 @@ function fdeCycle() {
         case '1':
             console.log("instruction 1");
             console.log(binToInt(bitInfo.NNN) + " " + bitInfo.NNN);
-            pc = "0x" + bin2hex(bitInfo.NNN);
+            pc = binToInt(bitInfo.NNN);
             break;
 
         case '6':
@@ -115,7 +115,7 @@ function fdeCycle() {
             break;
         case 'a':
             console.log("instruction a");
-            ir = "0x" + bin2hex(bitInfo.NNN);
+            ir = binToInt(bitInfo.NNN);
             break;
         case 'd':
             console.log("instruction d");
@@ -125,12 +125,12 @@ function fdeCycle() {
             let yCoord = binToInt(registers[generalRegister2]) % displayHeight;
             //from memory access the sprite starting from the index register 
 
-            let spriteIndex = toInt(ir);
+            let spriteIndex = ir;
             let limit = spriteIndex + binToInt(bitInfo.N);
 
             for (; spriteIndex < limit; spriteIndex++) {
                 let xCoordIter = xCoord;
-                let spriteRow = hex2bin(memory[spriteIndex]);
+                let spriteRow = intToBin(memory[spriteIndex]);
                 for (let j = 0; j < 8; j++) {
                     if (spriteRow[j] === '1')
                         togglePixel(yCoord, xCoordIter);
