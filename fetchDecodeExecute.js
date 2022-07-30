@@ -9,19 +9,42 @@ let debugFlag = 0;
 let someKeyIsDown = 0;
 let keyDownDict = {};
 
-document.addEventListener('keydown', function(event) {
-    someKeyIsDown = 1;
-    keyDownDict[event.code] = 1;
+//how to implement key listeners ? should store info of all keys pressed till now like below
+// or store only the latest key
+
+// document.addEventListener('keydown', function (event) {
+//     someKeyIsDown = 1;
+//     keyDownDict[event.code] = 1;
+// });
+// document.addEventListener('keyup', function (event) {
+//     if (event.code in keyDownDict) {
+//         delete keyDownDict[event.code];
+//     }
+//     if (Object.keys(keyDownDict).length === 0) {
+//         someKeyIsDown = 0;
+//     }
+
+// });
+
+//implementation for storing only one key and block until that key is no longer pressed
+document.addEventListener('keydown', function (event) {
+    if (Object.keys(keyDownDict).length === 0) {
+        someKeyIsDown = 1;
+        keyDownDict[event.code] = 1;
+    }
 });
-document.addEventListener('keyup', function(event) {
-    if(event.code in keyDownDict) {
+
+document.addEventListener('keyup', function (event) {
+    if (event.code in keyDownDict) {
         delete keyDownDict[event.code];
     }
-    if(Object.keys(keyDownDict).length === 0) {
+    if (Object.keys(keyDownDict).length === 0) {
         someKeyIsDown = 0;
     }
-    
+
 });
+
+
 //-----
 
 
@@ -111,8 +134,10 @@ document.getElementById('inputfile')
             }, 1000 / 700);
 
             soundDelayID = setInterval(() => {
-                dt--;
-                st--;
+                if(dt > 0)
+                    dt--;
+                if(st > 0)
+                    st--;
             }, 1000 / 60);  //check time calculation
         }
 
@@ -186,6 +211,60 @@ function fdeCycle() {
             return 'e';
         }
         if ('keyV' in keyDownDict && keyValueInReg === "f") {
+            return 'f';
+        }
+
+        return '';
+    }
+
+    function getKeyDown() {
+
+        if ('Digit1' in keyDownDict) {
+            return '0';
+        }
+        if ('Digit2' in keyDownDict) {
+            return '1';
+        }
+        if ('Digit3' in keyDownDict) {
+            return '2';
+        }
+        if ('Digit4' in keyDownDict) {
+            return '3';
+        }
+        if ('keyQ' in keyDownDict) {
+            return '4';
+        }
+        if ('keyW' in keyDownDict) {
+            return '5';
+        }
+        if ('keyE' in keyDownDict) {
+            return '6';
+        }
+        if ('keyR' in keyDownDict) {
+            return '7';
+        }
+        if ('keyA' in keyDownDict) {
+            return '8';
+        }
+        if ('keyS' in keyDownDict) {
+            return '9';
+        }
+        if ('keyD' in keyDownDict) {
+            return 'a';
+        }
+        if ('keyF' in keyDownDict) {
+            return 'b';
+        }
+        if ('keyZ' in keyDownDict) {
+            return 'c';
+        }
+        if ('keyX' in keyDownDict) {
+            return 'd';
+        }
+        if ('keyC' in keyDownDict) {
+            return 'e';
+        }
+        if ('keyV' in keyDownDict) {
             return 'f';
         }
 
@@ -359,7 +438,7 @@ function fdeCycle() {
         case 'e': {
 
             if (bin2hex(bitInfo.NN) === "9e") {
-                if(someKeyIsDown === 1) {
+                if (someKeyIsDown === 1) {
                     console.log("key is down, skipping....");
                     incremenetPC();
                     incremenetPC();
@@ -368,7 +447,7 @@ function fdeCycle() {
 
             else if (bin2hex(bitInfo.NN) === "a1") {
                 if (someKeyIsDown === 1) {
-                    let val = registers['V'+bin2hex(bitInfo.X)];
+                    let val = registers['V' + bin2hex(bitInfo.X)];
                     if (~checkInputDown(val)) {
                         incremenetPC();
                         incremenetPC();
@@ -379,7 +458,6 @@ function fdeCycle() {
         }
         case 'f': {
             let generalRegister1 = "V" + bin2hex(bitInfo.X);
-            if(bitInfo.N)
             switch (bin2hex(bitInfo.NN)) {
                 case "7":
                     registers[generalRegister1] = dt;
@@ -396,9 +474,28 @@ function fdeCycle() {
                 case "a":
                     keyInstFlag0a = 1;
                     pc -= 2;
-                    if(someKeyIsDown === 1) {
-                        
+                    if (someKeyIsDown === 1) {
+                        registers[generalRegister1] = getKeyDown();
                     }
+                    break;
+                case "29":
+                    //check how are values stored in registers
+                    ir = 80 + binToInt(registers[generalRegister1])*5;
+                    break;
+                case "33":
+                    let no = binToInt(registers[generalRegister1]).toString();
+                    no = "0".repeat(3-no.length)+no;
+                    memory[ir] = parseInt(no[0]);
+                    memory[ir+1] = parseInt(no[1]);
+                    memory[ir+2] = parseInt(no[2]);
+                    break;
+                case "55":
+                    for(let i=0;i<16;i++)
+                        memory[ir+i] = registers['V'+toHex(i)];
+                    break;
+                case "65":
+                    for(let i=0;i<16;i++)
+                        registers['V'+toHex(i)] = intToBin(memory[ir+i]);
                     break;
             }
             break;
