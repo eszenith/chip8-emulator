@@ -4,7 +4,7 @@
 let memory = new Array(4096);
 let stack = new Array(256);
 function toHex(no) {
-    return "0x" + no.toString(16);
+    return no.toString(16);
 }
 
 function toInt(no) {
@@ -45,7 +45,7 @@ let st = 0;
 let registers = {};
 
 for (let i = 0; i <= 15; i++) {
-    registers['V' + toHex(i).slice(2)] = '0'.repeat(8);
+    registers['V' + toHex(i)] = '0'.repeat(8);
 }
 console.log(registers);
 
