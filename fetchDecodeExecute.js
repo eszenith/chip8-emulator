@@ -52,7 +52,7 @@ function intToBin(inte) {
     //return inte.toString(2);
     let bin = inte.toString(2);
     //if (inte >= 0)
-        return ("00000000" + bin).substr(-8);
+    return ("00000000" + bin).substr(-8);
 
     // dealing with negative numbers
 
@@ -132,7 +132,7 @@ document.getElementById('inputfile')
             fdeIntervalID = setInterval(() => {
                 fdeCycle();
 
-            }, 1000 / 700);
+            }, 1000 / 400);
 
 
         }
@@ -150,7 +150,6 @@ let keyInstFlag0a = 0;
 function fdeCycle() {
 
     let instruction = intToBin(memory[pc]) + intToBin(memory[pc + 1]);
-
 
     incremenetPC();
     incremenetPC();
@@ -180,40 +179,40 @@ function fdeCycle() {
         if ('Digit4' in keyDownDict && keyValueInReg === "3") {
             return '3';
         }
-        if ('keyQ' in keyDownDict && keyValueInReg === "4") {
+        if ('KeyQ' in keyDownDict && keyValueInReg === "4") {
             return '4';
         }
-        if ('keyW' in keyDownDict && keyValueInReg === "5") {
+        if ('KeyW' in keyDownDict && keyValueInReg === "5") {
             return '5';
         }
-        if ('keyE' in keyDownDict && keyValueInReg === "6") {
+        if ('KeyE' in keyDownDict && keyValueInReg === "6") {
             return '6';
         }
-        if ('keyR' in keyDownDict && keyValueInReg === "7") {
+        if ('KeyR' in keyDownDict && keyValueInReg === "7") {
             return '7';
         }
-        if ('keyA' in keyDownDict && keyValueInReg === "8") {
+        if ('KeyA' in keyDownDict && keyValueInReg === "8") {
             return '8';
         }
-        if ('keyS' in keyDownDict && keyValueInReg === "9") {
+        if ('KeyS' in keyDownDict && keyValueInReg === "9") {
             return '9';
         }
-        if ('keyD' in keyDownDict && keyValueInReg === "a") {
+        if ('KeyD' in keyDownDict && keyValueInReg === "a") {
             return 'a';
         }
-        if ('keyF' in keyDownDict && keyValueInReg === "b") {
+        if ('KeyF' in keyDownDict && keyValueInReg === "b") {
             return 'b';
         }
-        if ('keyZ' in keyDownDict && keyValueInReg === "c") {
+        if ('KeyZ' in keyDownDict && keyValueInReg === "c") {
             return 'c';
         }
-        if ('keyX' in keyDownDict && keyValueInReg === "d") {
+        if ('KeyX' in keyDownDict && keyValueInReg === "d") {
             return 'd';
         }
-        if ('keyC' in keyDownDict && keyValueInReg === "e") {
+        if ('KeyC' in keyDownDict && keyValueInReg === "e") {
             return 'e';
         }
-        if ('keyV' in keyDownDict && keyValueInReg === "f") {
+        if ('KeyV' in keyDownDict && keyValueInReg === "f") {
             return 'f';
         }
 
@@ -234,40 +233,40 @@ function fdeCycle() {
         if ('Digit4' in keyDownDict) {
             return '3';
         }
-        if ('keyQ' in keyDownDict) {
+        if ('KeyQ' in keyDownDict) {
             return '4';
         }
-        if ('keyW' in keyDownDict) {
+        if ('KeyW' in keyDownDict) {
             return '5';
         }
-        if ('keyE' in keyDownDict) {
+        if ('KeyE' in keyDownDict) {
             return '6';
         }
-        if ('keyR' in keyDownDict) {
+        if ('KeyR' in keyDownDict) {
             return '7';
         }
-        if ('keyA' in keyDownDict) {
+        if ('KeyA' in keyDownDict) {
             return '8';
         }
-        if ('keyS' in keyDownDict) {
+        if ('KeyS' in keyDownDict) {
             return '9';
         }
-        if ('keyD' in keyDownDict) {
+        if ('KeyD' in keyDownDict) {
             return 'a';
         }
-        if ('keyF' in keyDownDict) {
+        if ('KeyF' in keyDownDict) {
             return 'b';
         }
-        if ('keyZ' in keyDownDict) {
+        if ('KeyZ' in keyDownDict) {
             return 'c';
         }
-        if ('keyX' in keyDownDict) {
+        if ('KeyX' in keyDownDict) {
             return 'd';
         }
-        if ('keyC' in keyDownDict) {
+        if ('KeyC' in keyDownDict) {
             return 'e';
         }
-        if ('keyV' in keyDownDict) {
+        if ('KeyV' in keyDownDict) {
             return 'f';
         }
 
@@ -327,7 +326,7 @@ function fdeCycle() {
             // console.log("instruction 7 : ");
             let generalRegister = "V" + bin2hex(bitInfo.X);
             let currentVxValue = binToInt(registers["V" + bin2hex(bitInfo.X)]);
-            
+
             // console.log("x curr value bin : "+registers["V" + bin2hex(bitInfo.X)]+" converted :  "+currentVxValue);
             // console.log("NN value bin : "+bitInfo.NN+" converted : "+binToInt(bitInfo.NN));
             registers[generalRegister] = intToBin(currentVxValue + binToInt(bitInfo.NN));
@@ -444,18 +443,20 @@ function fdeCycle() {
             break;
         }
         case 'e': {
-
+            let val = bin2hex(registers['V' + bin2hex(bitInfo.X)]);
+            //console.log("e instrction val  : "+val+" typeof val : "+typeof(val));
+            
             if (bin2hex(bitInfo.NN) === "9e") {
                 if (someKeyIsDown === 1) {
-                    console.log("key is down, skipping....");
-                    incremenetPC();
-                    incremenetPC();
+                    if (checkInputDown(val)) {
+                        incremenetPC();
+                        incremenetPC();
+                    }
                 }
             }
 
             else if (bin2hex(bitInfo.NN) === "a1") {
                 if (someKeyIsDown === 1) {
-                    let val = registers['V' + bin2hex(bitInfo.X)];
                     if (~checkInputDown(val)) {
                         incremenetPC();
                         incremenetPC();
@@ -483,7 +484,7 @@ function fdeCycle() {
                     keyInstFlag0a = 1;
                     pc -= 2;
                     if (someKeyIsDown === 1) {
-                        registers[generalRegister1] = getKeyDown();
+                        registers[generalRegister1] = hex2bin(getKeyDown());
                     }
                     break;
                 case "29":
