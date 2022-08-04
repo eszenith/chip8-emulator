@@ -51,33 +51,30 @@ document.addEventListener('keyup', function (event) {
 function intToBin(inte) {
     //return inte.toString(2);
     let bin = inte.toString(2);
-    if (inte >= 0)
+    //if (inte >= 0)
         return ("00000000" + bin).substr(-8);
-    /*
-    else A
 
-    \
-        return ("00000000" + bin.slice(1)).substr(-8);*/
+    // dealing with negative numbers
 
-    let flag = 0;
-    bin = bin.slice(1);
-    console.log(bin);
-    for (let i = bin.length; i >= 0; i--) {
-        console.log(bin[i] + " " + flag);
-        if (bin[i] === '1')
-            flag = 1;
+    // let flag = 0;
+    // bin = bin.slice(1);
+    // console.log(bin);
+    // for (let i = bin.length; i >= 0; i--) {
+    //     console.log(bin[i] + " " + flag);
+    //     if (bin[i] === '1')
+    //         flag = 1;
 
-        if (flag === 1) {
-            if (bin[i] === '0') {
-                bin[i] = '1';
-            }
-            else {
-                bin[i] = '0';
-            }
-        }
-    }
+    //     if (flag === 1) {
+    //         if (bin[i] === '0') {
+    //             bin[i] = '1';
+    //         }
+    //         else {
+    //             bin[i] = '0';
+    //         }
+    //     }
+    // }
 
-    return ("11111111" + bin).substr(-8);
+    // return ("11111111" + bin).substr(-8);
 }
 
 function binToInt(bin) {
@@ -125,20 +122,19 @@ document.getElementById('inputfile')
 
             pc = toInt("0x200");
 
+            soundDelayID = setInterval(() => {
+                if (dt > 0)
+                    dt--;
+                if (st > 0)
+                    st--;
+            }, 1000 / 60); //check time calculation
+
             fdeIntervalID = setInterval(() => {
                 fdeCycle();
-                if (debugFlag === 1) {
-                    // wait for input
-                    console.log(registers);
-                }
+
             }, 1000 / 700);
 
-            soundDelayID = setInterval(() => {
-                if(dt > 0)
-                    dt--;
-                if(st > 0)
-                    st--;
-            }, 1000 / 60);  //check time calculation
+
         }
 
         fr.readAsArrayBuffer(this.files[0]);
@@ -155,6 +151,7 @@ function fdeCycle() {
 
     let instruction = intToBin(memory[pc]) + intToBin(memory[pc + 1]);
 
+
     incremenetPC();
     incremenetPC();
 
@@ -162,7 +159,13 @@ function fdeCycle() {
 
     bitInfo = new SeperateBits(instruction);
 
-    //function used later
+    if (debugFlag === 1) {
+        console.log("debug : instruction : \n");
+        console.log(JSON.stringify(bitInfo));
+        console.log("debug : registers : \n");
+        console.log(JSON.stringify(registers));
+    }
+
     function checkInputDown(keyValueInReg) {
 
         if ('Digit1' in keyDownDict && keyValueInReg === "0") {
@@ -296,6 +299,9 @@ function fdeCycle() {
             break;
 
         case '3':
+            // console.log("register : "+registers["V" + bin2hex(bitInfo.X)]);
+            // console.log(bitInfo.NN);
+            // console.log(registers["V" + bin2hex(bitInfo.X)] === bitInfo.NN);
             if (registers["V" + bin2hex(bitInfo.X)] === bitInfo.NN) {
                 incremenetPC();
                 incremenetPC();
@@ -318,10 +324,12 @@ function fdeCycle() {
             break;
 
         case '7':
-
+            // console.log("instruction 7 : ");
             let generalRegister = "V" + bin2hex(bitInfo.X);
             let currentVxValue = binToInt(registers["V" + bin2hex(bitInfo.X)]);
-
+            
+            // console.log("x curr value bin : "+registers["V" + bin2hex(bitInfo.X)]+" converted :  "+currentVxValue);
+            // console.log("NN value bin : "+bitInfo.NN+" converted : "+binToInt(bitInfo.NN));
             registers[generalRegister] = intToBin(currentVxValue + binToInt(bitInfo.NN));
 
             if (registers[generalRegister].length > 8) {
@@ -460,13 +468,13 @@ function fdeCycle() {
             let generalRegister1 = "V" + bin2hex(bitInfo.X);
             switch (bin2hex(bitInfo.NN)) {
                 case "7":
-                    registers[generalRegister1] = dt;
+                    registers[generalRegister1] = intToBin(dt);
                     break;
                 case "15":
-                    dt = registers[generalRegister1];
+                    dt = binToInt(registers[generalRegister1]);
                     break;
                 case "18":
-                    st = registers[generalRegister1];
+                    st = binToInt(registers[generalRegister1]);
                     break;
                 case "1e":
                     ir += binToInt(registers[generalRegister1]);
@@ -480,22 +488,22 @@ function fdeCycle() {
                     break;
                 case "29":
                     //check how are values stored in registers
-                    ir = 80 + binToInt(registers[generalRegister1])*5;
+                    ir = 80 + binToInt(registers[generalRegister1]) * 5;
                     break;
                 case "33":
                     let no = binToInt(registers[generalRegister1]).toString();
-                    no = "0".repeat(3-no.length)+no;
+                    no = "0".repeat(3 - no.length) + no;
                     memory[ir] = parseInt(no[0]);
-                    memory[ir+1] = parseInt(no[1]);
-                    memory[ir+2] = parseInt(no[2]);
+                    memory[ir + 1] = parseInt(no[1]);
+                    memory[ir + 2] = parseInt(no[2]);
                     break;
                 case "55":
-                    for(let i=0;i<16;i++)
-                        memory[ir+i] = registers['V'+toHex(i)];
+                    for (let i = 0; i < 16; i++)
+                        memory[ir + i] = registers['V' + toHex(i)];
                     break;
                 case "65":
-                    for(let i=0;i<16;i++)
-                        registers['V'+toHex(i)] = intToBin(memory[ir+i]);
+                    for (let i = 0; i < 16; i++)
+                        registers['V' + toHex(i)] = intToBin(memory[ir + i]);
                     break;
             }
             break;
