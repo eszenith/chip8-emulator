@@ -50,10 +50,22 @@ document.addEventListener('keyup', function (event) {
 
 function intToBin(inte) {
     //return inte.toString(2);
-    let bin = inte.toString(2);
-    //if (inte >= 0)
-    return ("00000000" + bin).substr(-8);
+    let bin;
+    try {
+        bin = inte.toString(2);
 
+        if (inte >= 0)
+            return ("00000000" + bin).substr(-8);
+
+        bin = bin.slice(1);
+    }
+    catch (err) {
+        console.log("-----err start-----");
+        console.log(err);
+        console.log(bin);
+        console.log("--------------");
+    }
+    return ("00000000" + bin).substr(-8);
     // dealing with negative numbers
 
     // let flag = 0;
@@ -445,7 +457,7 @@ function fdeCycle() {
         case 'e': {
             let val = bin2hex(registers['V' + bin2hex(bitInfo.X)]);
             //console.log("e instrction val  : "+val+" typeof val : "+typeof(val));
-            
+
             if (bin2hex(bitInfo.NN) === "9e") {
                 if (someKeyIsDown === 1) {
                     if (checkInputDown(val)) {
@@ -467,6 +479,8 @@ function fdeCycle() {
         }
         case 'f': {
             let generalRegister1 = "V" + bin2hex(bitInfo.X);
+            // limit for 55 and 65 instruction
+            let limit = binToInt(registers[generalRegister1]) + 1;
             switch (bin2hex(bitInfo.NN)) {
                 case "7":
                     registers[generalRegister1] = intToBin(dt);
@@ -499,11 +513,12 @@ function fdeCycle() {
                     memory[ir + 2] = parseInt(no[2]);
                     break;
                 case "55":
-                    for (let i = 0; i < 16; i++)
-                        memory[ir + i] = registers['V' + toHex(i)];
+                    for (let i = 0; i < limit; i++)
+                        memory[ir + i] = binToInt(registers['V' + toHex(i)]);
                     break;
                 case "65":
-                    for (let i = 0; i < 16; i++)
+                    
+                    for (let i = 0; i < limit; i++)
                         registers['V' + toHex(i)] = intToBin(memory[ir + i]);
                     break;
             }
