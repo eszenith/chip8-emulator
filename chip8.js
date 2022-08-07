@@ -12,6 +12,7 @@ function toInt(no) {
     return parseInt(no, 16);
 }
 
+//fonts to store in memory
 let fonts = [
     "0xF0", "0x90", "0x90", "0x90", "0xF0", // 0
     "0x20", "0x60", "0x20", "0x20", "0x70", // 1
@@ -38,11 +39,14 @@ for (let i = fontStart, j = 0; i < fontEnd; i++, j++) {
 }
 //console.log(memory[toInt("0x050")]+"  "+toInt("0x050").toString());
 
+//these registers use integer values
 let pc = 0;
 let ir = 0;
 let sp = 0;
 let dt = 0;
 let st = 0;
+
+// all Vx registers have value in bit strings
 let registers = {};
 
 for (let i = 0; i <= 15; i++) {

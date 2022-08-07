@@ -46,8 +46,6 @@ document.addEventListener('keyup', function (event) {
 
 
 //-----
-
-
 function intToBin(inte) {
     //return inte.toString(2);
     let bin;
@@ -65,28 +63,30 @@ function intToBin(inte) {
         console.log(bin);
         console.log("--------------");
     }
-    return ("00000000" + bin).substr(-8);
-    // dealing with negative numbers
 
-    // let flag = 0;
-    // bin = bin.slice(1);
-    // console.log(bin);
-    // for (let i = bin.length; i >= 0; i--) {
-    //     console.log(bin[i] + " " + flag);
-    //     if (bin[i] === '1')
-    //         flag = 1;
-
-    //     if (flag === 1) {
-    //         if (bin[i] === '0') {
-    //             bin[i] = '1';
-    //         }
-    //         else {
-    //             bin[i] = '0';
-    //         }
-    //     }
-    // }
-
-    // return ("11111111" + bin).substr(-8);
+    //if negative binary returns the 2's complement of binary
+    bin = ("00000000" + bin).substr(-8)
+    if (inte < 0){
+        let twoCompBin = "";
+        let flag = 0;
+        for(let i = bin.length-1;i>=0;i--) {
+            if(flag === 1) {
+                if(bin[i] === "0") 
+                    twoCompBin += "1";
+                else
+                    twoCompBin += "0";
+            }
+            else {
+                twoCompBin += bin[i];
+            }
+            if((bin[i] === "1") && (flag === 0)) 
+                flag = 1;
+        }
+        console.log(bin);
+        console.log(twoCompBin);
+        return twoCompBin.split("").reverse().join("");
+        //return "1"+("00000000" + bin).substr(-7);
+    }
 }
 
 function binToInt(bin) {
@@ -434,8 +434,9 @@ function fdeCycle() {
         case 'd': {
             let generalRegister1 = "V" + bin2hex(bitInfo.X);
             let generalRegister2 = "V" + bin2hex(bitInfo.Y);
-            let xCoord = binToInt(registers[generalRegister1]) % displayWidth;
-            let yCoord = binToInt(registers[generalRegister2]) % displayHeight;
+            let xCoord = binToInt(registers[generalRegister1]) % (displayWidth);
+            let yCoord = binToInt(registers[generalRegister2]) % (displayHeight);
+            registers["Vf"] = intToBin(0);
             //from memory access the sprite starting from the index register 
 
             let spriteIndex = ir;
@@ -446,8 +447,12 @@ function fdeCycle() {
                 let spriteRow = intToBin(memory[spriteIndex]);
                 for (let j = 0; j < 8; j++) {
                     if (spriteRow[j] === '1')
+                    {
+                        if(getPixel(yCoord, xCoordIter))
+                            registers["Vf"] = intToBin(1);
+                        
                         togglePixel(yCoord, xCoordIter);
-
+                    }
                     xCoordIter++;
                 }
                 yCoord++;
@@ -511,6 +516,12 @@ function fdeCycle() {
                     memory[ir] = parseInt(no[0]);
                     memory[ir + 1] = parseInt(no[1]);
                     memory[ir + 2] = parseInt(no[2]);
+                    console.log("33 isntruction")
+                    console.log(no);
+                    console.log(memory[ir]);
+                    console.log(memory[ir+1]);
+                    console.log(memory[ir+2]);
+
                     break;
                 case "55":
                     for (let i = 0; i < limit; i++)
