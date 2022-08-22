@@ -3,7 +3,7 @@
 let instructionPerSecond = 10000;
 let fdeIntervalID;
 let soundDelayID;
-let debugFlag = 0;
+let debugFlag = 1;
 
 // this code records all key down at the moment, used for some instruction later
 let someKeyIsDown = 0;
@@ -29,6 +29,7 @@ let keyDownDict = {};
 //implementation for storing only one key and block until that key is no longer pressed
 document.addEventListener('keydown', function (event) {
     if (Object.keys(keyDownDict).length === 0) {
+        console.log("entered some key");
         someKeyIsDown = 1;
         keyDownDict[event.code] = 1;
     }
@@ -44,7 +45,25 @@ document.addEventListener('keyup', function (event) {
 
 });
 
-
+function twoCompelment(bin) {
+    bin = ("00000000" + bin).substr(-8);
+        let twoCompBin = "";
+        let flag = 0;
+        for(let i = bin.length-1;i>=0;i--) {
+            if(flag === 1) {
+                if(bin[i] === "0") 
+                    twoCompBin += "1";
+                else
+                    twoCompBin += "0";
+            }
+            else {
+                twoCompBin += bin[i];
+            }
+            if((flag === 0) && (bin[i] === "1"))
+                flag = 1;
+        }
+        return twoCompBin.split("").reverse().join("");
+}
 //-----
 function intToBin(inte) {
     //return inte.toString(2);
@@ -64,29 +83,10 @@ function intToBin(inte) {
         console.log("--------------");
     }
 
+    
     //if negative binary returns the 2's complement of binary
-    bin = ("00000000" + bin).substr(-8)
-    if (inte < 0){
-        let twoCompBin = "";
-        let flag = 0;
-        for(let i = bin.length-1;i>=0;i--) {
-            if(flag === 1) {
-                if(bin[i] === "0") 
-                    twoCompBin += "1";
-                else
-                    twoCompBin += "0";
-            }
-            else {
-                twoCompBin += bin[i];
-            }
-            if((bin[i] === "1") && (flag === 0)) 
-                flag = 1;
-        }
-        console.log(bin);
-        console.log(twoCompBin);
-        return twoCompBin.split("").reverse().join("");
+    return twoCompelment(bin);
         //return "1"+("00000000" + bin).substr(-7);
-    }
 }
 
 function binToInt(bin) {
@@ -288,7 +288,7 @@ function fdeCycle() {
 
     switch (bin2hex(bitInfo.opcode)) {
         case '0':
-
+            
             if (bin2hex(bitInfo.X) + bin2hex(bitInfo.NN) === "0e0") {
                 for (let i = 0; i < displayHeight; i++) {
                     for (let j = 0; j < displayWidth; j++) {
@@ -437,8 +437,10 @@ function fdeCycle() {
             let xCoord = binToInt(registers[generalRegister1]) % (displayWidth);
             let yCoord = binToInt(registers[generalRegister2]) % (displayHeight);
             registers["Vf"] = intToBin(0);
+            console.log("integer in register ("+binToInt(registers[generalRegister1])+" , "+binToInt(registers[generalRegister2]))
+            console.log(" draw instructions: ("+ xCoord + " , " + yCoord+")")
             //from memory access the sprite starting from the index register 
-
+ 
             let spriteIndex = ir;
             let limit = spriteIndex + binToInt(bitInfo.N);
 
@@ -465,6 +467,7 @@ function fdeCycle() {
 
             if (bin2hex(bitInfo.NN) === "9e") {
                 if (someKeyIsDown === 1) {
+                    console.log("somekey is down instruction e92 : "+JSON.stringify(keyDownDict));
                     if (checkInputDown(val)) {
                         incremenetPC();
                         incremenetPC();
@@ -474,6 +477,7 @@ function fdeCycle() {
 
             else if (bin2hex(bitInfo.NN) === "a1") {
                 if (someKeyIsDown === 1) {
+                    console.log("somekey is down instruction ea1 : "+JSON.stringify(keyDownDict));
                     if (~checkInputDown(val)) {
                         incremenetPC();
                         incremenetPC();
@@ -502,6 +506,7 @@ function fdeCycle() {
                 case "a":
                     keyInstFlag0a = 1;
                     pc -= 2;
+                    console.log("somekey is down , instruction a");
                     if (someKeyIsDown === 1) {
                         registers[generalRegister1] = hex2bin(getKeyDown());
                     }
