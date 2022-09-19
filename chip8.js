@@ -42,7 +42,7 @@ for (let i = fontStart, j = 0; i < fontEnd; i++, j++) {
 //these registers use integer values
 let pc = 0;
 let ir = 0;
-let sp = 0;
+let sp = -1;
 let dt = 0;
 let st = 0;
 
@@ -52,6 +52,11 @@ let registers = {};
 for (let i = 0; i <= 15; i++) {
     registers['V' + toHex(i)] = '0'.repeat(8);
 }
+
+for(let i = 0; i<4096;i++) {
+    memory[i] = 0;
+}
+
 console.log(registers);
 
 

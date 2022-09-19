@@ -6,6 +6,10 @@ let soundDelayID;
 let debugFlag = 1;
 let debugStopFlag = 0;
 
+let input0aData = {
+    instr0aFlag : 0,
+    keyCode : [],
+}
 // this code records all key down at the moment, used for some instruction later
 let someKeyIsDown = 0;
 let keyDownDict = {};
@@ -22,7 +26,7 @@ function debugPrint(...args) {
 }
 
 function debugPrintRegister() {
-    for(let reg in registers) {
+    for (let reg in registers) {
         debugPrint(`${reg} : ${binToInt(registers[reg])}`)
     }
 }
@@ -48,25 +52,29 @@ function debugPrintRegister() {
 document.addEventListener('keydown', function (event) {
 
     //for debugging 
-    
+
     if (event.code === "KeyC") {
         debugStopFlag = 0;
     }
-    
+
     console.log("some key pressed");
     if (Object.keys(keyDownDict).length === 0) {
         //check: convert array search to hashmap
-        if (event.code in {"Digit1" : 1,"Digit2" : 1,"Digit3" : 1,"KeyQ" : 1, "KeyW" : 1, "KeyE" : 1, "KeyA" : 1, "KeyS" : 1, "KeyD" : 1}) {
+        if (event.code in { "Digit1": 1, "Digit2": 1, "Digit3": 1, "Digit4": 1, "KeyQ": 1, "KeyW": 1, "KeyE": 1, "KeyR": 1, "KeyA": 1, "KeyS": 1, "KeyD": 1, "KeyF": 1, "KeyZ": 1, "KeyX": 1, "KeyC": 1, "KeyV": 1 }) {
             console.log("dict updated with key pressed");
             someKeyIsDown = 1;
             keyDownDict[event.code] = 1;
         }
-        
+
     }
 });
 
 document.addEventListener('keyup', function (event) {
     if (event.code in keyDownDict) {
+        //fxo0a instruction change flag to 1 now changing to 2, so, that execution continues after key press and release
+        if (input0aData.instr0aFlag === 1) 
+            input0aData.instr0aFlag = 2;
+        
         delete keyDownDict[event.code];
     }
     if (Object.keys(keyDownDict).length === 0) {
@@ -74,6 +82,7 @@ document.addEventListener('keyup', function (event) {
     }
 
 });
+
 
 function twoCompelment(bin) {
     bin = ("00000000" + bin).substr(-8);
@@ -136,6 +145,7 @@ function incremenetPC() {
     pc += 1;
 }
 
+
 function loadProgramToMemory(view8bit) {
     let i = toInt("0x200");
     console.log("memory contents : ")
@@ -194,8 +204,8 @@ let keyInstFlag0a = 0;
 function fdeCycle() {
 
     let instruction = intToBin(memory[pc]) + intToBin(memory[pc + 1]);
-    
-    if(debugFlag === 1)
+
+    if (debugFlag === 1)
         debugStopFlag = 1;
 
     pc += 2
@@ -325,12 +335,14 @@ function fdeCycle() {
                 }
             }
             else if (bin2hex(bitInfo.X) + bin2hex(bitInfo.NN) === "0ee") {
-                
-                if (stack.length !== 0)
-                    pc = stack.pop();
+
+                if (sp >= 0) {
+                    pc = stack[sp];
+                    sp--;
+                }
                 else
-                    console.log("stack:  underflow")
-                debugPrint("opcode 0ee ", " X : ", binToInt(bitInfo.X), " PC : ", pc, "stack ", JSON.stringify(stack.slice(Math.max(stack.length - 5, 1))));
+                    throw new error("stack : underflow")
+                debugPrint("stack : opcode 0ee ", " X : ", binToInt(bitInfo.X), " sp : ", sp, " PC : ", pc, "  stack ", JSON.stringify(stack.slice(Math.max(stack.length - 5, 1))));
             }
             break;
         case '1':
@@ -339,9 +351,10 @@ function fdeCycle() {
             break;
 
         case '2':
-            stack.push(pc);
+            sp++;
+            stack[sp] = pc;
             pc = binToInt(bitInfo.NNN);
-            debugPrint("opcode 1nnn ", " NNN : ", binToInt(bitInfo.NNN), " pc : ", pc, "stack ", JSON.stringify(stack.slice(Math.max(stack.length - 5, 1))));
+            debugPrint(" stack : opcode 2nnn ", " NNN : ", binToInt(bitInfo.NNN), " sp : ", sp, " pc : ", pc, "  stack ", JSON.stringify(stack.slice(Math.max(stack.length - 5, 1))));
             break;
 
         case '3':
@@ -361,6 +374,7 @@ function fdeCycle() {
                 pc += 2;
                 debugPrint("opcode 4XNN skip since X !== NN, pc : ", pc);
             }
+            break;
         case '5':
             debugPrint("opcode 5XY0  ", " X : ", binToInt(bitInfo.X), " Y : ", binToInt(bitInfo.Y));
             if (registers["V" + bin2hex(bitInfo.X)] === registers["V" + bin2hex(bitInfo.Y)]) {
@@ -370,9 +384,9 @@ function fdeCycle() {
             break;
 
         case '6':
-            
+
             registers["V" + bin2hex(bitInfo.X)] = bitInfo.NN;
-            debugPrint("opcode 6XNN  ", " X : ", binToInt(bitInfo.X), " NN : ", binToInt(bitInfo.NN),"  V" + bin2hex(bitInfo.X)," : ", binToInt(registers["V" + bin2hex(bitInfo.X)]));
+            debugPrint("opcode 6XNN  ", " X : ", binToInt(bitInfo.X), " NN : ", binToInt(bitInfo.NN), "  V" + bin2hex(bitInfo.X), " : ", binToInt(registers["V" + bin2hex(bitInfo.X)]));
             break;
 
         case '7':
@@ -382,7 +396,7 @@ function fdeCycle() {
 
             // console.log("x curr value bin : "+registers["V" + bin2hex(bitInfo.X)]+" converted :  "+currentVxValue);
             // console.log("NN value bin : "+bitInfo.NN+" converted : "+binToInt(bitInfo.NN));
-            debugPrint("opcode 7XNN  before addition : ", generalRegister," : ", binToInt(registers[generalRegister]));
+            debugPrint("opcode 7XNN  before addition : ", generalRegister, " : ", binToInt(registers[generalRegister]));
             //check: adding may lead to overflow
             registers[generalRegister] = intToBin(currentVxValue + binToInt(bitInfo.NN));
 
@@ -553,7 +567,7 @@ function fdeCycle() {
             }
 
             else if (bin2hex(bitInfo.NN) === "a1") {
-                debugPrint("exa1 :  X : ", bin2hex(registers['V' + bin2hex(bitInfo.X)]));
+                debugPrint("exa1 :  input in VX : ", bin2hex(registers['V' + bin2hex(bitInfo.X)]));
                 if (someKeyIsDown === 1) {
                     console.log("somekey is down instruction ea1 : " + JSON.stringify(keyDownDict));
                     if (!checkInputDown(val)) {
@@ -589,19 +603,24 @@ function fdeCycle() {
                 case "a":
                     //do not move pc to until some key pressed
                     pc -= 2;
-                    debugPrint("input fx0a  ");
-                    if (someKeyIsDown === 1) {
-                        
-                        registers[generalRegister1] = hex2bin(getKeyDown());
-                        debugPrint("fx0a someKey is down   key :", binToInt(registers[generalRegister1]));
-                        //move program counter to next instruction sicne some key was pressed
-                        pc +=2;
+
+                    if(someKeyIsDown === 1) {
+                        input0aData.instr0aFlag = 1;
+                        input0aData.keyCode = hex2bin(getKeyDown());
                     }
+
+                    if(input0aData.instr0aFlag === 2) {
+                        input0aData.instr0aFlag = 0;
+                        registers[generalRegister1] = input0aData.keyCode;
+                        debugPrint("fx0a someKey is down   key :", binToInt(registers[generalRegister1]));
+                        pc += 2;
+                    }
+
                     break;
                 case "29":
                     //check how are values stored in registers
                     ir = 80 + binToInt(registers[generalRegister1]) * 5;
-                    debugPrint("fx29   X : ", binToInt(registers[generalRegister1]) , " ir :  ", ir);
+                    debugPrint("fx29   X : ", binToInt(registers[generalRegister1]), " ir :  ", ir);
                     break;
                 case "33":
                     let no = binToInt(registers[generalRegister1]).toString();
@@ -609,7 +628,7 @@ function fdeCycle() {
                     memory[ir] = parseInt(no[0]);
                     memory[ir + 1] = parseInt(no[1]);
                     memory[ir + 2] = parseInt(no[2]);
-                    debugPrint("fx33 to store : ", no, " m[ir] : ", memory[ir], " m[ir+1] : ", memory[ir+1], " m[ir+2] : ", memory[ir+2])
+                    debugPrint("fx33 to store : ", no, " m[ir] : ", memory[ir], " m[ir+1] : ", memory[ir + 1], " m[ir+2] : ", memory[ir + 2])
                     break;
                 case "55":
                     debugPrint("fx55  ir : ", ir, " till VX : ", binToInt(bitInfo.X));
@@ -618,13 +637,12 @@ function fdeCycle() {
                     break;
                 case "65":
                     debugPrint("fx65  ir : ", ir, " till VX : ", binToInt(bitInfo.X));
-                    for (let i = 0; i < limit; i++)
-                    {
-                        debugPrint("Accessing :  ir+i : ", (ir+i), " memory[ir + i] : ", memory[ir + i]);
+                    for (let i = 0; i < limit; i++) {
+                        debugPrint("Accessing :  ir+i : ", (ir + i), " memory[ir + i] : ", memory[ir + i]);
                         registers['V' + toHex(i)] = intToBin(memory[ir + i]);
                     }
-                        
-                    
+
+
                     break;
             }
             break;
