@@ -365,21 +365,21 @@ function fdeCycle() {
             debugPrint("opcode 3XNN  ", " X : ", binToInt(bitInfo.X), " NN : ", binToInt(bitInfo.NN));
             if (registers["V" + bin2hex(bitInfo.X)] === bitInfo.NN) {
                 pc += 2;
-                debugPrint("opcode 3XNN skip since X === NN, pc : ", pc);
+                debugPrint("opcode 3XNN skip since X === NN, pc : ", "V" + bin2hex(bitInfo.X), " : ", registers["V" + bin2hex(bitInfo.X)] , " NN : ", bitInfo.NN);
             }
             break;
         case '4':
             debugPrint("opcode 4XNN  ", " X : ", binToInt(bitInfo.X), " NN : ", binToInt(bitInfo.NN));
             if (registers["V" + bin2hex(bitInfo.X)] !== bitInfo.NN) {
                 pc += 2;
-                debugPrint("opcode 4XNN skip since X !== NN, pc : ", pc);
+                debugPrint("opcode 4XNN skip since X !== NN, pc : ", pc, "V" + bin2hex(bitInfo.X), " : ", registers["V" + bin2hex(bitInfo.X)] , " NN : ", bitInfo.NN);
             }
             break;
         case '5':
             debugPrint("opcode 5XY0  ", " X : ", binToInt(bitInfo.X), " Y : ", binToInt(bitInfo.Y));
             if (registers["V" + bin2hex(bitInfo.X)] === registers["V" + bin2hex(bitInfo.Y)]) {
                 pc += 2;
-                debugPrint("opcode 5XY0 skip since X === Y, pc : ", pc);
+                debugPrint("opcode 5XY0 skip since X === Y, pc : ", pc, "V" + bin2hex(bitInfo.X), " : ", registers["V" + bin2hex(bitInfo.X)] , " NN : ", bitInfo.NN);
             }
             break;
 
@@ -402,8 +402,9 @@ function fdeCycle() {
 
             if (registers[generalRegister].length > 8) {
                 registers[generalRegister] = registers[generalRegister].slice(registers[generalRegister].length - 8);
-                registers["Vf"] = intToBin(1);
+                // no need to set VF registers["Vf"] = intToBin(1);
             }
+            
             debugPrint("opcode 7XNN  ", " X : ", binToInt(bitInfo.X), " NN : ", binToInt(bitInfo.NN), "  ", generalRegister + " : ", binToInt(registers[generalRegister]), "  VF : ", binToInt(registers['Vf']));
             break;
 
@@ -479,7 +480,7 @@ function fdeCycle() {
                         //check if possible for register to be not 8 bits
                         debugPrint("instr 6")
                         registers["Vf"] = registers[generalRegister1][7];
-                        registers[generalRegister1] = intToBin(binToInt(registers[generalRegister1]) >>> 1);
+                        registers[generalRegister1] = intToBin(binToInt(registers[generalRegister1]) >> 1);
                     }
                     else {
                         debugPrint("instr e")
@@ -559,7 +560,7 @@ function fdeCycle() {
             if (bin2hex(bitInfo.NN) === "9e") {
                 debugPrint("ex9e :  X : ", bin2hex(registers['V' + bin2hex(bitInfo.X)]));
                 if (someKeyIsDown === 1) {
-                    console.log("somekey is down instruction e92 : " + JSON.stringify(keyDownDict));
+                    console.log("somekey is down instruction 9e : " + JSON.stringify(keyDownDict));
                     if (checkInputDown(val)) {
                         pc += 2;
                     }
