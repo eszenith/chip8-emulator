@@ -416,16 +416,19 @@ function fdeCycle() {
                     break;
                 case '1':
                     registers[generalRegister1] = registers[generalRegister1] | registers[generalRegister2];
+                    registers["Vf"] = 0;
                     debugPrint("8xy1 : ", generalRegister1 + " : ", registers[generalRegister1], "  ", generalRegister2 + " : ", registers[generalRegister2]);
 
                     break;
                 case '2':
                     registers[generalRegister1] = registers[generalRegister1] & registers[generalRegister2];
+                    registers["Vf"] = 0;
                     debugPrint("8xy2 : ", generalRegister1 + " : ", registers[generalRegister1], "  ", generalRegister2 + " : ", registers[generalRegister2]);
 
                     break;
                 case '3':
                     registers[generalRegister1] = registers[generalRegister1] ^ registers[generalRegister2];
+                    registers["Vf"] = 0;
                     debugPrint("8xy3 : ", generalRegister1 + " : ", registers[generalRegister1], "  ", generalRegister2 + " : ", registers[generalRegister2]);
 
                     break;
@@ -513,7 +516,6 @@ function fdeCycle() {
             }
 
         case 'a':
-
             ir = parseInt(bitInfo.NNN, 2);
             debugPrint("Annn : NNN : ", parseInt(bitInfo.NNN), "IR : ", ir);
             break;
@@ -575,13 +577,18 @@ function fdeCycle() {
                 }
             }
 
+            //regarding this instruction, we have to skip next instruction if the key with same value as in Vx is not pressed
+            // before only checking above condition if there was infact a key being pressed that is
+            // if a key is pressed then check if it not same as vx if that is true then skip instruction
+            // above condition misses the case if there is no key being pressed at all on keyboard 
+            // which should lead to a skip of instruction but that was not happening in previous commits
+            // below code correctly does waht exa1 is supposed to do probably 
+            
             else if (bin2hex(bitInfo.NN) === "a1") {
                 debugPrint("exa1 :  input in VX : ", int2hex(registers['V' + bin2hex(bitInfo.X)]));
-                if (someKeyIsDown === 1) {
-                    console.log("somekey is down instruction ea1 : " + JSON.stringify(keyDownDict));
-                    if (!checkInputDown(val)) {
-                        pc += 2;
-                    }
+                console.log("somekey is down instruction ea1 : " + JSON.stringify(keyDownDict));
+                if (!checkInputDown(val)) {
+                    pc += 2;
                 }
             }
             break;
