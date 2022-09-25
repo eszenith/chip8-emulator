@@ -558,8 +558,10 @@ function fdeCycle() {
                         togglePixel(yCoord, xCoordIter);
                     }
                     xCoordIter++;
+                    //xCoordIter %= displayWidth;
                 }
                 yCoord++;
+                //yCoord %= displayHeight;
             }
             break;
         }
@@ -583,7 +585,7 @@ function fdeCycle() {
             // above condition misses the case if there is no key being pressed at all on keyboard 
             // which should lead to a skip of instruction but that was not happening in previous commits
             // below code correctly does waht exa1 is supposed to do probably 
-            
+
             else if (bin2hex(bitInfo.NN) === "a1") {
                 debugPrint("exa1 :  input in VX : ", int2hex(registers['V' + bin2hex(bitInfo.X)]));
                 console.log("somekey is down instruction ea1 : " + JSON.stringify(keyDownDict));
@@ -634,9 +636,8 @@ function fdeCycle() {
 
                     break;
                 case "29":
-                    //check how are values stored in registers
                     ir = 80 + registers[generalRegister1] * 5;
-                    debugPrint("fx29   X : ", registers[generalRegister1], " ir :  ", ir);
+                    debugPrint("fx29   X value : ", registers[generalRegister1], " ir :  ", ir);
                     break;
                 case "33":
                     let no = registers[generalRegister1].toString();
