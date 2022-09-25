@@ -557,11 +557,17 @@ function fdeCycle() {
 
                         togglePixel(yCoord, xCoordIter);
                     }
-                    xCoordIter++;
-                    //xCoordIter %= displayWidth;
+                    // do not need to draw if x-coordinate goes out of bounds while drawing (clip if out of bounds while incrementing)
+                    if (xCoordIter < displayWidth-1)
+                        xCoordIter++;
+                    else
+                        break;
                 }
-                yCoord++;
-                //yCoord %= displayHeight;
+                // do not need to draw if y-coordinate goes out of bounds while drawing
+                if(yCoord < displayHeight-1)
+                    yCoord++;
+                else 
+                    break;
             }
             break;
         }
@@ -624,7 +630,7 @@ function fdeCycle() {
 
                     if (someKeyIsDown === 1) {
                         input0aData.instr0aFlag = 1;
-                        input0aData.keyCode = hex2bin(getKeyDown());
+                        input0aData.keyCode = toInt(getKeyDown());
                     }
 
                     if (input0aData.instr0aFlag === 2) {
